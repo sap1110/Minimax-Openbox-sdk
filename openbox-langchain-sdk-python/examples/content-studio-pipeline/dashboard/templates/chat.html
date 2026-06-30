@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OpenBox Content Studio</title>
+  <link rel="stylesheet" href="/static/chat.css"/>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-box">OB</div>
+    <span>Content Studio</span>
+  </div>
+  <div class="sidebar-hint">
+    <p>Type any topic or angle and the full AI pipeline will run:</p>
+    <ul>
+      <li>✦ Content strategy agent</li>
+      <li>✦ Compliance + SEO review</li>
+      <li>✦ Image generation (MiniMax)</li>
+      <li>✦ OpenBox governance layer</li>
+    </ul>
+  </div>
+  <div class="sidebar-settings">
+    <label>Audience persona</label>
+    <select id="audience-select">
+      <option value="AI Platform Lead">AI Platform Lead</option>
+      <option value="CISO">CISO</option>
+      <option value="Compliance Officer">Compliance Officer</option>
+      <option value="CTO">CTO</option>
+      <option value="DevOps Lead">DevOps Lead</option>
+    </select>
+    <label style="margin-top:12px;display:flex;align-items:center;gap:8px;cursor:pointer;">
+      <input type="checkbox" id="dry-run-check"/>
+      <span>Skip image generation (faster)</span>
+    </label>
+  </div>
+</aside>
+
+<!-- Main chat area -->
+<div class="chat-wrap">
+  <div class="chat-messages" id="messages">
+    <div class="welcome">
+      <div class="welcome-icon">✦</div>
+      <h1>OpenBox Content Studio</h1>
+      <p>Type a topic, angle, or content idea below.<br/>The full AI pipeline will generate a complete publishing pack.</p>
+      <div class="example-pills">
+        <button class="pill" onclick="fillPrompt(this)">AI agent governance for enterprise CISOs</button>
+        <button class="pill" onclick="fillPrompt(this)">Why runtime monitoring is the missing layer in LLM deployments</button>
+        <button class="pill" onclick="fillPrompt(this)">EU AI Act compliance checklist for AI teams</button>
+        <button class="pill" onclick="fillPrompt(this)">MCP protocol security risks in production agents</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-input-area">
+    <div class="chat-input-box">
+      <textarea id="prompt-input" placeholder="Type your topic or content angle…" rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button id="send-btn" onclick="sendPrompt()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+    <div class="chat-footer-note">Pipeline runs locally · OpenBox governance active · All output saved to /output</div>
+  </div>
+</div>
+
+<!-- Result panel (slides in from right) -->
+<div class="result-panel hidden" id="result-panel">
+  <div class="result-header">
+    <div class="result-title" id="result-title">Campaign Result</div>
+    <button class="close-btn" onclick="closeResult()">✕</button>
+  </div>
+  <div class="result-tabs">
+    <button class="rtab active" onclick="showRTab('posts', this)">📝 Posts</button>
+    <button class="rtab" onclick="showRTab('blog', this)">📰 Blog</button>
+    <button class="rtab" onclick="showRTab('seo', this)">🔍 SEO</button>
+    <button class="rtab" onclick="showRTab('images', this)">🖼 Images</button>
+    <button class="rtab" onclick="showRTab('review', this)">🛡 Review</button>
+    <button class="rtab" onclick="showRTab('raw', this)">📄 Raw</button>
+  </div>
+  <div class="result-body" id="result-body">
+    <div id="rtab-posts" class="rtab-pane active"></div>
+    <div id="rtab-blog" class="rtab-pane hidden"></div>
+    <div id="rtab-seo" class="rtab-pane hidden"></div>
+    <div id="rtab-images" class="rtab-pane hidden"></div>
+    <div id="rtab-review" class="rtab-pane hidden"></div>
+    <div id="rtab-raw" class="rtab-pane hidden"></div>
+  </div>
+</div>
+
+<script>
+const PLATFORMS = [
+  { key: "LINKEDIN",  label: "💼 LinkedIn" },
+  { key: "X",         label: "𝕏 X / Twitter" },
+  { key: "INSTAGRAM", label: "📸 Instagram" },
+  { key: "FACEBOOK",  label: "👥 Facebook" },
+  { key: "THREADS",   label: "🧵 Threads" },
+];
+
+function autoResize(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 160) + "px";
+}
+
+function handleKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendPrompt(); }
+}
+
+function fillPrompt(btn) {
+  document.getElementById("prompt-input").value = btn.textContent;
+  autoResize(document.getElementById("prompt-input"));
+}
+
+function addMessage(role, html, id) {
+  const msgs = document.getElementById("messages");
+  const welcome = msgs.querySelector(".welcome");
+  if (welcome) welcome.remove();
+
+  const div = document.createElement("div");
+  div.className = `msg msg-${role}`;
+  if (id) div.id = id;
+  div.innerHTML = html;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function updateMessage(id, html) {
+  const el = document.getElementById(id);
+  if (el) { el.innerHTML = html; document.getElementById("messages").scrollTop = 99999; }
+}
+
+async function sendPrompt() {
+  const input = document.getElementById("prompt-input");
+  const topic = input.value.trim();
+  if (!topic) return;
+
+  const audience = document.getElementById("audience-select").value;
+  const dryRun = document.getElementById("dry-run-check").checked;
+
+  input.value = "";
+  input.style.height = "auto";
+  document.getElementById("send-btn").disabled = true;
+
+  // User bubble
+  addMessage("user", `<div class="bubble">${escHtml(topic)}<div class="msg-meta">${audience}</div></div>`);
+
+  // Assistant thinking bubble
+  const thinkId = "think_" + Date.now();
+  addMessage("assistant", `
+    <div class="ai-avatar">OB</div>
+    <div class="bubble thinking">
+      <div class="think-steps" id="${thinkId}-steps">
+        <div class="step active" id="step-strategy">⏳ Running content strategy agent…</div>
+        <div class="step" id="step-review">   Compliance &amp; SEO review…</div>
+        <div class="step" id="step-images">   Image generation…</div>
+      </div>
+      <div class="log-stream" id="${thinkId}-log"></div>
+    </div>
+  `, thinkId);
+
+  // Start run
+  const res = await fetch("/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ topic, audience, dry_run: dryRun }),
+  });
+  const { run_id, error } = await res.json();
+  if (error) {
+    updateMessage(thinkId, `<div class="ai-avatar">OB</div><div class="bubble error">❌ ${escHtml(error)}</div>`);
+    document.getElementById("send-btn").disabled = false;
+    return;
+  }
+
+  // Stream SSE
+  const es = new EventSource(`/api/stream/${run_id}`);
+  const logEl = document.getElementById(`${thinkId}-log`);
+
+  es.addEventListener("log", e => {
+    const line = JSON.parse(e.data);
+    // Update step indicators based on log content
+    if (line.includes("content_strategy")) markStep("step-strategy", true);
+    if (line.includes("compliance_review")) markStep("step-review", true);
+    if (line.includes("image_agent") || line.includes("Generating images")) markStep("step-images", true);
+
+    const p = document.createElement("div");
+    p.className = "log-line";
+    p.textContent = line;
+    logEl.appendChild(p);
+    logEl.scrollTop = logEl.scrollHeight;
+  });
+
+  es.addEventListener("status", e => {
+    const msg = JSON.parse(e.data);
+    logEl.insertAdjacentHTML("beforeend", `<div class="log-line log-status">${escHtml(msg)}</div>`);
+  });
+
+  es.addEventListener("done", async e => {
+    es.close();
+    const folder = JSON.parse(e.data);
+    markStep("step-strategy", true, true);
+    markStep("step-review", true, true);
+    if (!dryRun) markStep("step-images", true, true);
+
+    // Fetch result and show
+    const rRes = await fetch(`/api/result/${folder}`);
+    const data = await rRes.json();
+    const pack = data.pack || {};
+    const topic_title = pack.topic || data.topic || data.userPrompt || folder;
+
+    // Replace thinking bubble with summary card
+    updateMessage(thinkId, `
+      <div class="ai-avatar">OB</div>
+      <div class="bubble result-card" onclick="openResult(${JSON.stringify(JSON.stringify(data)).slice(1,-1)})">
+        <div class="rc-badge ${data.verdict === 'PASS' ? 'badge-pass' : 'badge-rev'}">
+          ${data.verdict || 'ASSEMBLED'}
+        </div>
+        <div class="rc-title">${escHtml(topic_title)}</div>
+        <div class="rc-meta">${escHtml(pack.audience || data.audience || '')} · ${(pack.platforms || data.platforms || []).join(', ')}</div>
+        <div class="rc-sections">
+          ${PLATFORMS.map(p => pack[p.key] ? `<span class="rc-chip">${p.label}</span>` : '').join('')}
+          ${pack.BLOG_TITLE ? '<span class="rc-chip">📰 Blog</span>' : ''}
+          ${pack.IMAGE_PROMPT_HERO ? '<span class="rc-chip">🖼 Images</span>' : ''}
+        </div>
+        <div class="rc-cta">Click to view full publishing pack →</div>
+      </div>
+    `);
+
+    _currentData = data;
+    openResult(data);
+    document.getElementById("send-btn").disabled = false;
+  });
+
+  es.addEventListener("error", e => {
+    es.close();
+    const msg = JSON.parse(e.data);
+    updateMessage(thinkId, `<div class="ai-avatar">OB</div><div class="bubble error">❌ ${escHtml(msg)}</div>`);
+    document.getElementById("send-btn").disabled = false;
+  });
+
+  es.onerror = () => {
+    es.close();
+    document.getElementById("send-btn").disabled = false;
+  };
+}
+
+function markStep(id, active, done) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add("active");
+  if (done) { el.textContent = el.textContent.replace("⏳", "✅").replace("   ", "✅ "); }
+}
+
+let _currentData = null;
+
+function openResult(data) {
+  if (typeof data === "string") data = JSON.parse(data);
+  _currentData = data;
+  const pack = data.pack || {};
+  const images = data.images || {};
+
+  document.getElementById("result-title").textContent =
+    (pack.topic || data.topic || data.userPrompt || "Campaign").slice(0, 60);
+
+  // Posts tab
+  const postsEl = document.getElementById("rtab-posts");
+  postsEl.innerHTML = PLATFORMS.map(p => {
+    const text = pack[p.key] || "";
+    if (!text) return "";
+    return `
+      <div class="rcard">
+        <div class="rcard-label">${p.label}</div>
+        <div class="rcard-text">${escHtml(text)}</div>
+        <button class="rcopy" onclick="copyText(${JSON.stringify(text)})">Copy</button>
+      </div>`;
+  }).join("") || `<div class="rcard"><div class="rcard-label">Raw Output</div><div class="rcard-text">${escHtml((pack.rawAgentOutput || "").slice(0, 2000))}</div></div>`;
+
+  // Blog tab
+  document.getElementById("rtab-blog").innerHTML = `
+    <div class="rcard">
+      <div class="rcard-label">📰 Blog Title</div>
+      <div class="rcard-text"><strong>${escHtml(pack.BLOG_TITLE || "—")}</strong></div>
+    </div>
+    <div class="rcard">
+      <div class="rcard-label">Blog Summary</div>
+      <div class="rcard-text">${escHtml(pack.BLOG_SUMMARY || "—")}</div>
+    </div>
+    <div class="rcard">
+      <div class="rcard-label">📣 CTA</div>
+      <div class="rcard-text">${escHtml(pack.CTA || "—")}</div>
+    </div>
+    <div class="rcard">
+      <div class="rcard-label">🏷 Hashtags</div>
+      <div class="rcard-text hashtags">${escHtml(pack.HASHTAGS || "—")}</div>
+    </div>`;
+
+  // SEO tab
+  document.getElementById("rtab-seo").innerHTML = `
+    <div class="rcard"><div class="rcard-label">SEO Title</div><div class="rcard-text">${escHtml(pack.SEO_TITLE || (pack.seo||{}).title || "—")}</div></div>
+    <div class="rcard"><div class="rcard-label">Meta Description</div><div class="rcard-text">${escHtml(pack.META_DESCRIPTION || (pack.seo||{}).meta || "—")}</div></div>
+    <div class="rcard"><div class="rcard-label">Keywords</div><div class="rcard-text hashtags">${escHtml(pack.KEYWORDS || (pack.seo||{}).keywords || "—")}</div></div>
+    <div class="rcard"><div class="rcard-label">Posting Schedule</div><div class="rcard-text">${escHtml(pack.POSTING_SCHEDULE || "—")}</div></div>`;
+
+  // Images tab
+  const imgHtml = ["hero","square","story"].map(k => {
+    const prompt = (pack.imagePrompts || {})[k] || pack["IMAGE_PROMPT_" + k.toUpperCase()] || "";
+    const imgPath = images[k];
+    return `
+      <div class="rcard">
+        <div class="rcard-label">${k.charAt(0).toUpperCase()+k.slice(1)}</div>
+        ${imgPath ? `<img src="/images/${imgPath.replace(/\\/g,'/')}" class="rimg"/>` : '<div class="rimg-ph">No image generated</div>'}
+        ${prompt ? `<div class="rcard-prompt">${escHtml(prompt.slice(0,300))}</div>` : ""}
+      </div>`;
+  }).join("");
+  document.getElementById("rtab-images").innerHTML = imgHtml;
+
+  // Review tab
+  document.getElementById("rtab-review").innerHTML = `
+    <div class="rcard">
+      <div class="rcard-label">Verdict</div>
+      <div class="rcard-text"><span class="${data.verdict==='PASS'?'badge-pass':'badge-rev'} badge-inline">${data.verdict||"—"}</span>  Retries: ${data.retryCount||0}</div>
+    </div>
+    ${data.reviewerNotes ? `<div class="rcard"><div class="rcard-label">Reviewer Notes</div><div class="rcard-text">${escHtml(data.reviewerNotes)}</div></div>` : ""}
+    <div class="rcard"><div class="rcard-label">Full Review</div><div class="rcard-text rcard-pre">${escHtml(data.reviewRaw||"—")}</div></div>`;
+
+  // Raw tab
+  document.getElementById("rtab-raw").innerHTML = `
+    <div class="rcard">
+      <button class="rcopy" onclick="copyText(${JSON.stringify(pack.rawAgentOutput||data.agentOutput||"")})">Copy All</button>
+      <div class="rcard-pre" style="margin-top:8px">${escHtml(pack.rawAgentOutput||data.agentOutput||"No raw output")}</div>
+    </div>`;
+
+  document.getElementById("result-panel").classList.remove("hidden");
+}
+
+function closeResult() {
+  document.getElementById("result-panel").classList.add("hidden");
+}
+
+function showRTab(name, btn) {
+  document.querySelectorAll(".rtab-pane").forEach(p => p.classList.add("hidden"));
+  document.querySelectorAll(".rtab").forEach(t => t.classList.remove("active"));
+  document.getElementById("rtab-" + name).classList.remove("hidden");
+  btn.classList.add("active");
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const el = event.target;
+    el.textContent = "Copied!";
+    setTimeout(() => el.textContent = "Copy", 1500);
+  });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OpenBox Content Studio</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-box">OB</span>
+        <div>
+          <div class="logo-title">OpenBox Content Studio</div>
+          <div class="logo-sub">LangChain · LangGraph · MiniMax · Governance</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" onclick="runPipeline('brief-only')">📡 Radar Only</button>
+        <button class="btn btn-outline" onclick="runPipeline('dry-run')">🔍 Dry Run</button>
+        <button class="btn btn-primary" onclick="runPipeline('full')">🚀 Full Run</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-num">{{ total }}</div>
+        <div class="stat-label">Campaigns</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">{{ reports | selectattr('hasImages') | list | length }}</div>
+        <div class="stat-label">With Images</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">{{ reports | selectattr('verdict', 'eq', 'PASS') | list | length }}</div>
+        <div class="stat-label">Passed Review</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">9</div>
+        <div class="stat-label">Feed Sources</div>
+      </div>
+    </div>
+
+    {% if reports %}
+    <div class="campaigns-grid">
+      {% for r in reports %}
+      <a href="/campaign/{{ r.folder }}" class="card">
+        <div class="card-header">
+          <span class="badge badge-{{ 'pass' if r.verdict == 'PASS' else 'revision' }}">
+            {{ r.verdict or 'ASSEMBLED' }}
+          </span>
+          {% if r.score %}
+          <span class="score">⭐ {{ r.score }}</span>
+          {% endif %}
+        </div>
+        <div class="card-topic">{{ r.topic or r.id }}</div>
+        <div class="card-audience">{{ r.audience }}</div>
+        <div class="card-meta">
+          <span>{{ r.platforms | join(', ') }}</span>
+          {% if r.hasImages %}
+          <span class="img-badge">🖼 {{ r.imageCount }}/3 images</span>
+          {% endif %}
+        </div>
+        {% if r.generatedAt %}
+        <div class="card-date">{{ r.generatedAt[:19].replace('T',' ') }}</div>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">No campaigns yet</div>
+      <div class="empty-sub">Click <strong>Radar Only</strong> to fetch today's signals, or <strong>Full Run</strong> to generate all content.</div>
+    </div>
+    {% endif %}
+  </main>
+
+  <!-- Run modal -->
+  <div id="run-modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-title" id="modal-title">Running pipeline…</div>
+      <div class="spinner"></div>
+      <pre id="modal-log" class="modal-log"></pre>
+      <button class="btn btn-primary" onclick="closeModal()" id="modal-close" style="display:none">Close</button>
+    </div>
+  </div>
+
+  <script>
+    async function runPipeline(mode) {
+      document.getElementById('run-modal').classList.remove('hidden');
+      document.getElementById('modal-title').textContent =
+        mode === 'brief-only' ? '📡 Running Intelligence Radar…' :
+        mode === 'dry-run'    ? '🔍 Running Dry Run (no images)…' :
+                                '🚀 Running Full Pipeline…';
+      document.getElementById('modal-log').textContent = '';
+      document.getElementById('modal-close').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/run', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({mode})
+        });
+        const data = await res.json();
+        document.getElementById('modal-log').textContent = data.output || data.message || '';
+        document.getElementById('modal-title').textContent =
+          data.exit_code === 0 ? '✅ Pipeline complete!' : '⚠️ Pipeline finished (check output)';
+      } catch(e) {
+        document.getElementById('modal-log').textContent = 'Error: ' + e.message;
+        document.getElementById('modal-title').textContent = '❌ Error';
+      }
+      document.getElementById('modal-close').style.display = 'inline-block';
+    }
+
+    function closeModal() {
+      document.getElementById('run-modal').classList.add('hidden');
+      location.reload();
+    }
+  </script>
+</body>
+</html>

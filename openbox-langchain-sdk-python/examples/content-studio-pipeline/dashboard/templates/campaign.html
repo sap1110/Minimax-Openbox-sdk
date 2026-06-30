@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ (data.pack or data).get('topic', data.get('topic','Campaign')) }} — OpenBox</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  {% set pack = data.get('pack') or data %}
+  {% set images = data.get('images', {}) %}
+  {% set radar = pack.get('radar') or data.get('_radar') or {} %}
+  {% set seo = pack.get('seo', {}) %}
+  {% set blog = pack.get('blog', {}) %}
+  {% set content = pack.get('content', {}) %}
+  {% set raw = pack.get('rawAgentOutput') or data.get('agentOutput', '') %}
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <a href="/" class="back-btn">← Back</a>
+        <div>
+          <div class="logo-title">{{ pack.get('topic') or data.get('topic','Campaign') }}</div>
+          <div class="logo-sub">{{ pack.get('audience') or data.get('audience','') }}</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="badge badge-{{ 'pass' if data.get('verdict') == 'PASS' else 'revision' }} badge-lg">
+          {{ data.get('verdict') or 'ASSEMBLED' }}
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('content')">📝 Content</button>
+      <button class="tab" onclick="showTab('images')">🖼 Images</button>
+      <button class="tab" onclick="showTab('seo')">🔍 SEO</button>
+      <button class="tab" onclick="showTab('review')">🛡 Review</button>
+      <button class="tab" onclick="showTab('raw')">📄 Raw</button>
+    </div>
+
+    <!-- Content Tab -->
+    <div id="tab-content" class="tab-pane active">
+      <div class="section-grid">
+
+        {% set platforms = [
+          ('linkedin', '💼 LinkedIn'),
+          ('x', '𝕏 X / Twitter'),
+          ('instagram', '📸 Instagram'),
+          ('facebook', '👥 Facebook'),
+          ('threads', '🧵 Threads')
+        ] %}
+
+        {% for key, label in platforms %}
+          {% set text = content.get(key) or pack.get(key | upper) or '' %}
+          {% if not text and raw %}
+            {# fallback — show nothing, raw tab has full output #}
+          {% endif %}
+          {% if text %}
+          <div class="platform-card">
+            <div class="platform-label">{{ label }}</div>
+            <div class="platform-text">{{ text }}</div>
+            <button class="copy-btn" onclick="copyText(this)">Copy</button>
+          </div>
+          {% endif %}
+        {% endfor %}
+
+        {% if blog.get('title') or pack.get('BLOG_TITLE') %}
+        <div class="platform-card full-width">
+          <div class="platform-label">📰 Blog</div>
+          <div class="platform-text"><strong>{{ blog.get('title') or pack.get('BLOG_TITLE','') }}</strong></div>
+          <div class="platform-text mt-sm">{{ blog.get('summary') or pack.get('BLOG_SUMMARY','') }}</div>
+        </div>
+        {% endif %}
+
+        {% if pack.get('cta') or pack.get('CTA') %}
+        <div class="platform-card">
+          <div class="platform-label">📣 CTA</div>
+          <div class="platform-text">{{ pack.get('cta') or pack.get('CTA','') }}</div>
+        </div>
+        {% endif %}
+
+        {% if pack.get('hashtags') or pack.get('HASHTAGS') %}
+        <div class="platform-card">
+          <div class="platform-label">🏷 Hashtags</div>
+          <div class="platform-text hashtags">{{ pack.get('hashtags') or pack.get('HASHTAGS','') }}</div>
+        </div>
+        {% endif %}
+
+        {% if not content and not pack.get('LINKEDIN') and raw %}
+        <div class="platform-card full-width">
+          <div class="platform-label">📝 Agent Output</div>
+          <div class="platform-text" style="white-space:pre-wrap;font-size:0.85rem;">{{ raw[:3000] }}{% if raw|length > 3000 %}…{% endif %}</div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Images Tab -->
+    <div id="tab-images" class="tab-pane hidden">
+      {% set img_prompts = pack.get('imagePrompts', {}) %}
+      <div class="images-grid">
+        {% for key, label, size in [('hero','Hero','1200×630'), ('square','Square','1080×1080'), ('story','Story','1080×1920')] %}
+        <div class="img-card">
+          <div class="img-label">{{ label }} <span class="img-size">{{ size }}</span></div>
+          {% set img_path = images.get(key) %}
+          {% if img_path %}
+          <img src="/images/{{ img_path | replace('\\','/') | replace(output_dir,'') }}" class="img-preview" onerror="this.style.display='none'"/>
+          {% else %}
+          <div class="img-placeholder">No image generated</div>
+          {% endif %}
+          {% set prompt = img_prompts.get(key, '') %}
+          {% if prompt %}
+          <div class="img-prompt-label">Prompt used:</div>
+          <div class="img-prompt">{{ prompt[:400] }}{% if prompt|length > 400 %}…{% endif %}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- SEO Tab -->
+    <div id="tab-seo" class="tab-pane hidden">
+      <div class="seo-section">
+        <div class="seo-field">
+          <div class="seo-label">SEO Title</div>
+          <div class="seo-value">{{ seo.get('title') or pack.get('SEO_TITLE','—') }}</div>
+        </div>
+        <div class="seo-field">
+          <div class="seo-label">Meta Description</div>
+          <div class="seo-value">{{ seo.get('meta') or pack.get('META_DESCRIPTION','—') }}</div>
+        </div>
+        <div class="seo-field">
+          <div class="seo-label">Keywords</div>
+          <div class="seo-value keywords">{{ seo.get('keywords') or pack.get('KEYWORDS','—') }}</div>
+        </div>
+        <div class="seo-field">
+          <div class="seo-label">Posting Schedule</div>
+          <div class="seo-value">
+            {% set sched = pack.get('postingTimes', {}) %}
+            {% if sched %}
+              {% for plat, time in sched.items() %}
+              <div><strong>{{ plat }}</strong>: {{ time }}</div>
+              {% endfor %}
+            {% else %}{{ pack.get('POSTING_SCHEDULE','—') }}{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Tab -->
+    <div id="tab-review" class="tab-pane hidden">
+      <div class="review-box">
+        <div class="review-meta">
+          <span class="badge badge-{{ 'pass' if data.get('verdict') == 'PASS' else 'revision' }}">{{ data.get('verdict','—') }}</span>
+          <span class="review-retries">Retries: {{ pack.get('retryCount') or data.get('retryCount', 0) }}</span>
+        </div>
+        {% if data.get('reviewerNotes') %}
+        <div class="review-notes">
+          <strong>Reviewer Notes:</strong>
+          <pre>{{ data.get('reviewerNotes','') }}</pre>
+        </div>
+        {% endif %}
+        <div class="review-raw">
+          <strong>Full Review:</strong>
+          <pre>{{ data.get('reviewRaw','No review data') }}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw Tab -->
+    <div id="tab-raw" class="tab-pane hidden">
+      <div class="raw-box">
+        <button class="copy-btn" onclick="copyText(this, document.getElementById('raw-content').textContent)">Copy All</button>
+        <pre id="raw-content">{{ raw }}</pre>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function showTab(name) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.remove('hidden');
+      event.target.classList.add('active');
+    }
+
+    function copyText(btn, text) {
+      const t = text || btn.previousElementSibling?.textContent || '';
+      navigator.clipboard.writeText(t).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = orig, 1500);
+      });
+    }
+  </script>
+</body>
+</html>

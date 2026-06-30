@@ -1,0 +1,1345 @@
+{
+  "name": "Content Studio Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://hnrss.org/newest?q=AI+governance+OR+%22agentic+AI%22+OR+%22LLM+security%22+OR+%22AI+compliance%22+OR+%22AI+trust%22+OR+%22model+risk%22+OR+%22responsible+AI%22+OR+%22EU+AI+Act%22&count=20",
+        "options": {}
+      },
+      "id": "3a0eb7a9-2fc2-4a85-bd65-08b20454bbb4",
+      "name": "RSS — Hacker News",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        240
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://tldr.tech/ai/rss",
+        "options": {}
+      },
+      "id": "fcad6e2e-a7fc-4898-bc48-819dc44ea44a",
+      "name": "RSS — TLDR AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        432
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://venturebeat.com/category/ai/feed/",
+        "options": {}
+      },
+      "id": "0d0c72aa-9a6a-46c8-a9b7-0694900ffae0",
+      "name": "RSS — VentureBeat AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        624
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://www.darkreading.com/rss.xml",
+        "options": {}
+      },
+      "id": "4165f4ec-5b9e-4631-afde-21341c7f6a0f",
+      "name": "RSS — Dark Reading",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        816
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://www.wired.com/feed/category/security/latest/rss",
+        "options": {}
+      },
+      "id": "0c392dde-a6d3-451d-a683-e6343163a6cb",
+      "name": "RSS — Wired Security",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        1008
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.feedburner.com/TheHackersNews",
+        "options": {}
+      },
+      "id": "f1e5ec9b-a9aa-4d16-9855-55fa1dacfe4e",
+      "name": "RSS — The Hacker News",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        1200
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "=https://hn.algolia.com/api/v1/search?query=AI+governance+OR+%22agentic+AI%22+OR+%22LLM+security%22+OR+%22AI+compliance%22+OR+%22model+risk%22&tags=story&numericFilters=created_at_i%3E%3D{{ Math.floor((Date.now() - 86400000) / 1000) }}&hitsPerPage=20",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "bdf3b2e0-25e8-4558-a343-96f178ef6dc4",
+      "name": "API — HN Algolia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        1392
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://dev.to/api/articles?tags=aigovernance,llmsecurity,responsibleai,aiethics&per_page=20&top=1",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "c11a0623-a276-4745-b19c-ee2a717ffcd5",
+      "name": "API — DEV.to",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        1584
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "https://export.arxiv.org/api/query?search_query=ti:%22AI+governance%22+OR+ti:%22LLM+security%22+OR+ti:%22agentic+AI%22+OR+ti:%22responsible+AI%22&sortBy=submittedDate&sortOrder=descending&max_results=8",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "id": "3b256120-43ca-4c6f-aad4-cfbf63855227",
+      "name": "API — arXiv",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        1776
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 9
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        80,
+        896
+      ],
+      "id": "959ab8bd-abdf-4578-be0b-3679230146af",
+      "name": "Merge RSS"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-haiku-4.5",
+        "options": {
+          "timeout": 120000,
+          "maxRetries": 2
+        }
+      },
+      "id": "5c7f6577-138a-4498-90ee-ef905062f1c6",
+      "name": "Claude Sonnet 4 (Gate)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        608,
+        1232
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "BluVhHtuAdF81TuZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function sourceFromUrl(url) {\n  const u = String(url || '').toLowerCase();\n\n  if (u.includes('venturebeat')) return 'VentureBeat';\n  if (u.includes('ycombinator')) return 'Hacker News';\n  if (u.includes('tldr.tech')) return 'TLDR AI';\n  if (u.includes('theregister')) return 'The Register';\n  if (u.includes('darkreading')) return 'Dark Reading';\n  if (u.includes('technologyreview')) return 'MIT Tech Review';\n  if (u.includes('wired.com')) return 'Wired';\n  if (u.includes('thehackernews')) return 'The Hacker News';\n  if (u.includes('securityweek')) return 'SecurityWeek';\n  if (u.includes('helpnetsecurity')) return 'Help Net Security';\n  if (u.includes('arxiv')) return 'arXiv';\n\n  return 'RSS';\n}\n\nconst d = $input.first().json;\n\nreturn (d.items || []).map(item => ({\n  json: {\n    title: item.title,\n    url: item.source,\n    published: item.published,\n    source: sourceFromUrl(item.source)\n  }\n}));"
+      },
+      "id": "18115099-1279-4d7f-97e2-d039b8a91566",
+      "name": "Normalize Feed Item",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        1008
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "k7hyOjlVNltMS1WH",
+          "mode": "list",
+          "cachedResultName": "Content Engine Queue",
+          "cachedResultUrl": "/projects/l1Hl5ujmSA6L2AsX/datatables/k7hyOjlVNltMS1WH"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "published": "={{ $json.published }}",
+            "source": "={{ $json.source }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "snippet",
+              "displayName": "snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "published",
+              "displayName": "published",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d2580d6f-759a-4635-9bd0-951d08c743fa",
+      "name": "Data Table — Insert Row",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        1008
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Receives all rows from Data Table as individual items\n// Deduplicates and bundles into a single item for OpenAI\n\nconst allItems = $input.all();\n\nconst seen = new Set();\nconst deduped = [];\n\nfor (const item of allItems) {\n  const d = item.json.json;\n\n  if (!d?.title) continue;\n\n  const key = d.title\n    .toLowerCase()\n    .replace(/[^a-z0-9]/g, '')\n    .slice(0, 60);\n\n  if (seen.has(key)) continue;\n\n  seen.add(key);\n\n  deduped.push({\n    title: d.title || '',\n    published: d.published || d.pubDate || '',\n    source: d.url || d.link || d.source || '',\n  });\n}\n\nreturn [\n  {\n    json: {\n      items: deduped,\n      count: deduped.length,\n    },\n  },\n];"
+      },
+      "id": "8452c0fb-cc0c-4ffc-896e-3c2c59affb9e",
+      "name": "Deduplicate & Bundle",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = Date.now();\n\nfunction parseDate(s) {\n  if (!s) return null;\n  const d = new Date(s);\n  return isNaN(d.getTime()) ? null : d;\n}\n\nfunction ageLabel(s) {\n  const d = parseDate(s);\n  if (!d) return 'unknown';\n  const hrs = Math.round((now - d.getTime()) / 3600000);\n  if (hrs < 1) return 'less than 1 hour ago';\n  if (hrs < 24) return hrs + ' hours ago';\n  const days = Math.round(hrs / 24);\n  return days + (days === 1 ? ' day ago' : ' days ago');\n}\n\nconst raw = $input.first().json;\nconst text = raw.output || raw.text || '';\n\nlet extracted = [];\ntry {\n  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  extracted = JSON.parse(cleaned).extracted || [];\n} catch(e) {\n  return [{ json: { pool: [], total: 0, error: 'Parse failed: ' + e.message, raw_preview: text.slice(0, 300) } }];\n}\n\nif (!extracted.length) {\n  return [{ json: { pool: [], total: 0, warning: 'Signal extractor returned empty array.' } }];\n}\n\nconst pool = extracted\n  .filter(item => {\n    const d = parseDate(item.published);\n    if (!d) return true;\n    return (now - d.getTime()) <= (7 * 24 * 60 * 60 * 1000);\n  })\n  .map(item => ({\n    title:          item.title          || '',\n    url:            item.url            || '',\n    published:      item.published      || '',\n    source:         item.source         || '',\n    summary:        item.summary        || '',\n    relevance_hint: item.relevance_hint || '',\n    age_label:      ageLabel(item.published)\n  }));\n\nreturn [{ json: { pool, total: pool.length } }];"
+      },
+      "id": "8ceb9e40-6482-4479-8b0f-9651cd244526",
+      "name": "Combine & Date-Filter Pool",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Top 5 → Content Studio Brief Emitter ─────────────────────────────────────\n// Parses the DeepSeek top-5 output and emits one n8n item per ranked brief.\n// Each item is formatted as the structured brief the Content Intelligence Parser\n// (in the content studio pipeline) expects.\n\nconst raw = $input.first().json;\nconst text = raw.output || raw.text || '';\nlet top5 = [];\n\ntry {\n  const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();\n  top5 = JSON.parse(cleaned).top5 || [];\n} catch(e) {\n  return [{ json: { _parse_error: true, message: 'Failed to parse top5: ' + e.message } }];\n}\n\nif (!top5.length) {\n  return [{ json: { _parse_error: true, message: 'top5 array is empty' } }];\n}\n\n// Emit one item per ranked brief so each fires the content studio independently\nreturn top5.map(t => ({\n  json: {\n    // Fields the Content Intelligence Parser reads directly\n    topic:       t.headline   || t.title || '',\n    audience:    t.persona    || 'CISO',\n    angle:       t.content_type || 'thought_leadership',\n    tone:        'authoritative',\n    platforms:   ['linkedin', 'x', 'instagram'],\n    campaign_id: 'radar_' + (t.rank || 0) + '_' + Date.now(),\n\n    // Enriched context passed through as rawText → injected into brief\n    rawText: [\n      'SOURCE ARTICLE: ' + (t.title || ''),\n      'URL: ' + (t.url || ''),\n      'SOURCE: ' + (t.source || ''),\n      'PUBLISHED: ' + (t.published || '') + ' (' + (t.age_label || '') + ')',\n      '',\n      'CONTENT BRIEF:',\n      'Headline: ' + (t.headline || ''),\n      'Hook: ' + (t.hook || ''),\n      'Key argument: ' + (t.key_argument || ''),\n      'Subheadings: ' + (t.three_subheadings || []).join(' → '),\n      'OpenBox product tie: ' + (t.openbox_product_tie || ''),\n      'CTA: ' + (t.cta || ''),\n      'Format: ' + (t.publish_format || ''),\n      '',\n      'WHY OPENBOX: ' + (t.why_openbox || ''),\n      '',\n      'Scores — Relevance: ' + t.relevance_score + '/10 · Urgency: ' + t.urgency_score + '/10 · Gap: ' + t.gap_score + '/10 · Freshness: ' + t.freshness_score + '/10 · Composite: ' + (t.composite_score || 0).toFixed(1) + '/10'\n    ].join('\\n'),\n\n    // Radar metadata carried through for final report\n    _radar: {\n      rank:               t.rank,\n      source_title:       t.title,\n      source_url:         t.url,\n      composite_score:    t.composite_score,\n      openbox_product_tie: t.openbox_product_tie\n    }\n  }\n}));"
+      },
+      "id": "85fbf0d6-cac8-46cf-bbc8-37e04982faa2",
+      "name": "Top 5 → Brief Emitter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2704,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Content Intelligence Parser (Studio Entry Point) ─────────────────────────\n// Receives structured brief items from the Top 5 emitter.\n// Enriches the brief string and sets up pipeline state.\n\nconst item = $input.first().json;\n\nconst topic      = String(item.topic     || '').slice(0, 120) || 'Not specified';\nconst audience   = String(item.audience  || 'CISO');\nconst angle      = String(item.angle     || 'thought_leadership');\nconst tone       = String(item.tone      || 'authoritative');\nconst campaignId = String(item.campaign_id || 'camp_' + Date.now());\nconst rawText    = String(item.rawText   || topic);\nconst platforms  = Array.isArray(item.platforms) ? item.platforms : ['linkedin', 'x', 'instagram'];\n\nconst brief = [\n  `CAMPAIGN ID: ${campaignId}`,\n  `TOPIC: ${topic}`,\n  `TARGET AUDIENCE: ${audience}`,\n  `ANGLE: ${angle}`,\n  `TONE: ${tone}`,\n  `PLATFORMS: ${platforms.join(', ')}`,\n  '',\n  'FULL CONTENT BRIEF FROM INTELLIGENCE RADAR:',\n  rawText,\n  '',\n  'Using the brief above, produce the full publishing pack for the platforms listed.'\n].join('\\n');\n\nreturn [{\n  json: {\n    campaignId,\n    topic,\n    audience,\n    angle,\n    tone,\n    platforms,\n    rawText,\n    brief,\n    retryCount: 0,\n    reviewerNotes: '',\n    _radar: item._radar || {}\n  }\n}];"
+      },
+      "id": "8e399c99-9130-4b92-806c-86722bf8a5b8",
+      "name": "Content Intelligence Parser",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2928,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst retryCount = (item.retryCount || 0) + 1;\n\nif (retryCount > 2) {\n  return [{ json: { ...item, retryCount, _maxRetriesExceeded: true } }];\n}\n\nconst notes = item.reviewerNotes || '';\nconst injectedBrief = notes\n  ? `${item.brief}\\n\\n──────────────────────────────────────\\nREVIEWER FEEDBACK (attempt ${retryCount}):\\n${notes}\\n\\nPlease address ALL points above and regenerate the full publishing pack.`\n  : item.brief;\n\nreturn [{ json: { ...item, retryCount, brief: injectedBrief, _maxRetriesExceeded: false } }];"
+      },
+      "id": "65d9f814-1d69-482e-9d78-0511991a0145",
+      "name": "Retry Counter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3152,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-3.5-haiku",
+        "options": {
+          "timeout": 120000,
+          "maxRetries": 2
+        }
+      },
+      "id": "2a908427-2553-43e7-8b9c-086a7ef9ae2c",
+      "name": "Claude Sonnet 4 (Studio)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        976
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "BluVhHtuAdF81TuZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('If').item.json.campaignId }}",
+        "contextWindowLength": 10
+      },
+      "id": "1552dfa9-9a42-4d01-a339-322d81843784",
+      "name": "Studio Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3728,
+        976
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f7390e90-71ff-4150-be6b-0856cbfb8ec2",
+      "name": "Wikipedia Research",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        3856,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'CAMPAIGN ID: ' + $('Content Intelligence Parser').first().json.campaignId + '\\n\\nCONTENT TO REVIEW:\\n' + $json.output }}",
+        "options": {
+          "systemMessage": "You are a senior Compliance and SEO Reviewer for OpenBox AI content. Perform four independent checks:\n\n**COPYRIGHT_CHECK:**\nScan for copied phrases, unattributed statistics, trademark conflicts. Rate: LOW / MEDIUM / HIGH. 2-3 sentence explanation.\n\n**BRAND_SAFETY_CHECK:**\nFlag controversial, politically charged, or off-brand content for a B2B AI governance brand. Rate: SAFE / CAUTION / UNSAFE.\n\n**SEO_CHECK:**\n- SEO_TITLE: length ≤60 chars? Primary keyword present?\n- META_DESCRIPTION: length ≤155 chars? CTA present?\n- KEYWORDS: relevance and variety\n- HASHTAGS: platform appropriate, not too niche\n- Readability: rough Flesch estimate\nList concrete fixes.\n\n**PLATFORM_COMPLIANCE:**\n- LINKEDIN: ≤1300 chars, ≤3 hashtags\n- X: ≤280 chars\n- INSTAGRAM: ≥3 hashtags\n- FACEBOOK: question present?\n- THREADS: ≤500 chars\nFlag violations.\n\n**VERDICT:** PASS or NEEDS_REVISION\n\n**REVISION_NOTES:**\nIf NEEDS_REVISION: numbered list of specific fixes with section names. If PASS: None.\n\nBe strict but constructive."
+        }
+      },
+      "id": "667352ea-1cd0-4911-9c83-57eba41c7d1b",
+      "name": "Compliance + SEO Reviewer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        4064,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-pro",
+        "options": {}
+      },
+      "id": "a0fbe95b-0d25-4e3a-937f-cdde1a0807f4",
+      "name": "Gemini 2.5 Pro (Reviewer)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        4144,
+        1088
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "BluVhHtuAdF81TuZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const reviewRaw = String($input.first().json.output || '');\nconst verdictMatch = reviewRaw.match(/\\*\\*VERDICT:\\*\\*\\s*(PASS|NEEDS_REVISION)/i);\nconst verdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'NEEDS_REVISION';\nconst notesMatch = reviewRaw.match(/\\*\\*REVISION_NOTES:\\*\\*([\\s\\S]*?)(?=\\*\\*[A-Z]|$)/i);\nconst reviewerNotes = notesMatch ? notesMatch[1].trim() : '';\nconst agentOutput = String($('Content Governance').first().json.output || '');\nconst parserData = $('Content Intelligence Parser').first().json;\n\nreturn [{\n  json: {\n    ...parserData,\n    agentOutput,\n    reviewRaw,\n    verdict,\n    reviewerNotes,\n    retryCount: parserData.retryCount || 0,\n    _pass: verdict === 'PASS'\n  }\n}];"
+      },
+      "id": "76c85997-8d82-44e4-a9fc-8cb37996adf8",
+      "name": "Verdict Extractor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4416,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = String($input.first().json.agentOutput || '');\nconst review = String($input.first().json.reviewRaw || '');\nconst meta = $input.first().json;\n\nconst SECTIONS = [\n  'UNIFIED_BRIEF','LINKEDIN','X','INSTAGRAM','FACEBOOK','THREADS',\n  'BLOG_TITLE','BLOG_SUMMARY','CTA','HASHTAGS',\n  'IMAGE_PROMPT_HERO','IMAGE_PROMPT_SQUARE','IMAGE_PROMPT_STORY',\n  'SEO_TITLE','META_DESCRIPTION','KEYWORDS','POSTING_SCHEDULE'\n];\n\nconst positions = [];\nSECTIONS.forEach(label => {\n  const re = new RegExp('\\\\*\\\\*' + label + ':\\\\*\\\\*', 'i');\n  const m = re.exec(raw);\n  if (m) positions.push({ label, start: m.index, end: m.index + m[0].length });\n});\npositions.sort((a, b) => a.start - b.start);\n\nconst f = {};\npositions.forEach((p, k) => {\n  const stop = k + 1 < positions.length ? positions[k + 1].start : raw.length;\n  f[p.label] = raw.slice(p.end, stop).trim();\n});\n\nconst scheduleRaw = f.POSTING_SCHEDULE || '';\nconst schedule = {};\nscheduleRaw.split('\\n').forEach(line => {\n  const parts = line.split(':');\n  if (parts.length >= 2) {\n    const platform = parts[0].trim().toLowerCase().replace(/[^a-z]/g, '');\n    schedule[platform] = parts.slice(1).join(':').trim();\n  }\n});\n\nconst postingTimes = {\n  linkedin:  schedule.linkedin  || 'Tue 08:30',\n  x:         schedule.x        || schedule.twitter || 'Wed 12:00',\n  instagram: schedule.instagram || 'Thu 18:00',\n  facebook:  schedule.facebook  || 'Fri 10:00',\n  threads:   schedule.threads   || 'Thu 19:00'\n};\n\nconst pack = {\n  campaignId:  meta.campaignId,\n  topic:       meta.topic,\n  audience:    meta.audience,\n  platforms:   meta.platforms,\n  radar:       meta._radar || {},\n  brief:       f.UNIFIED_BRIEF       || '',\n  content: {\n    linkedin:  f.LINKEDIN            || '',\n    x:         f.X                   || '',\n    instagram: f.INSTAGRAM           || '',\n    facebook:  f.FACEBOOK            || '',\n    threads:   f.THREADS             || ''\n  },\n  blog: {\n    title:     f.BLOG_TITLE          || '',\n    summary:   f.BLOG_SUMMARY        || ''\n  },\n  cta:         f.CTA                 || '',\n  hashtags:    f.HASHTAGS            || '',\n  imagePrompts: {\n    hero:      f.IMAGE_PROMPT_HERO   || 'professional marketing visual, 1200x630',\n    square:    f.IMAGE_PROMPT_SQUARE || 'professional marketing visual, 1080x1080',\n    story:     f.IMAGE_PROMPT_STORY  || 'professional marketing visual, 1080x1920'\n  },\n  seo: {\n    title:     f.SEO_TITLE           || '',\n    meta:      f.META_DESCRIPTION    || '',\n    keywords:  f.KEYWORDS            || ''\n  },\n  postingTimes,\n  review\n};\n\nreturn [{ json: { pack } }];"
+      },
+      "id": "7daba923-bc92-4581-9dbc-82ee3a4eb57d",
+      "name": "Publishing Pack Assembler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4640,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { pack } = $input.first().json;\n\nfunction buildUrl(prompt, width, height) {\n  const encoded = encodeURIComponent(String(prompt).slice(0, 400));\n  return `https://image.pollinations.ai/prompt/${encoded}?width=${width}&height=${height}&nologo=true&seed=${Math.floor(Math.random() * 99999)}`;\n}\n\nconst images = {\n  hero:   buildUrl(pack.imagePrompts.hero,   1200, 630),\n  square: buildUrl(pack.imagePrompts.square, 1080, 1080),\n  story:  buildUrl(pack.imagePrompts.story,  1080, 1920)\n};\n\nreturn [{ json: { pack, images } }];"
+      },
+      "id": "908dce9a-7b50-4059-98d4-29884f74216c",
+      "name": "Image Generation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5216,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { pack, images } = $input.first().json;\nconst c = pack.content || {};\nconst seo = pack.seo || {};\nconst pt = pack.postingTimes || {};\nconst radar = pack.radar || {};\n\nconst verdictMatch = pack.review.match(/\\*\\*VERDICT:\\*\\*\\s*(PASS|NEEDS_REVISION)/i);\nconst verdict = verdictMatch ? verdictMatch[1] : 'UNKNOWN';\nconst verdictEmoji = verdict === 'PASS' ? ':white_check_mark:' : ':warning:';\n\n// ── Full markdown report ──────────────────────────────────────────────────────\nconst md = [\n  `# OpenBox Content Pack — ${pack.topic.slice(0, 80)}`,\n  `**Campaign:** ${pack.campaignId}  |  **Audience:** ${pack.audience}  |  **Radar rank:** #${radar.rank || '?'}`,\n  radar.source_url ? `**Source signal:** [${radar.source_title || 'View'}](${radar.source_url})  |  **OpenBox product tie:** ${radar.openbox_product_tie || ''}` : '',\n  `---`,\n  `## Campaign brief`, pack.brief,\n  `---`,\n  `## Platform copy`,\n  `### LinkedIn`, c.linkedin,\n  `### X / Twitter`, c.x,\n  `### Instagram`, c.instagram,\n  `### Facebook`, c.facebook,\n  `### Threads`, c.threads,\n  `---`,\n  `## Blog`,\n  `**Title:** ${pack.blog.title}`,\n  pack.blog.summary,\n  `---`,\n  `## CTA`, pack.cta,\n  `## Hashtags`, pack.hashtags,\n  `---`,\n  `## SEO`,\n  `**Title tag:** ${seo.title}`,\n  `**Meta description:** ${seo.meta}`,\n  `**Keywords:** ${seo.keywords}`,\n  `---`,\n  `## Generated images`,\n  `**Hero (1200×630):** ${images.hero}`,\n  `**Square (1080×1080):** ${images.square}`,\n  `**Story (1080×1920):** ${images.story}`,\n  `---`,\n  `## Posting schedule`,\n  Object.entries(pt).map(([p, t]) => `- **${p.charAt(0).toUpperCase()+p.slice(1)}:** ${t}`).join('\\n'),\n  `---`,\n  `## Compliance + SEO review`, pack.review\n].filter(s => s !== '').join('\\n\\n');\n\n// ── Slack blocks ──────────────────────────────────────────────────────────────\nconst radarContext = radar.rank\n  ? `*Radar rank:* #${radar.rank}  ·  *Score:* ${(radar.composite_score || 0).toFixed(1)}/10  ·  *Product tie:* \\`${radar.openbox_product_tie || 'n/a'}\\`  ·  <${radar.source_url || ''}|Source signal>`\n  : '';\n\nconst slackBlocks = [\n  { type: 'header', text: { type: 'plain_text', text: `Content Pack Ready — ${pack.topic.slice(0, 55)}`, emoji: true } },\n  { type: 'section', fields: [\n    { type: 'mrkdwn', text: `*Campaign ID*\\n${pack.campaignId}` },\n    { type: 'mrkdwn', text: `*Audience*\\n${pack.audience}` },\n    { type: 'mrkdwn', text: `*Platforms*\\n${pack.platforms.join(', ')}` },\n    { type: 'mrkdwn', text: `*Review*\\n${verdictEmoji} ${verdict}` }\n  ]},\n  radarContext ? { type: 'context', elements: [{ type: 'mrkdwn', text: radarContext }] } : null,\n  { type: 'divider' },\n  { type: 'section', text: { type: 'mrkdwn', text: `*LinkedIn*\\n${c.linkedin.slice(0, 400)}${c.linkedin.length > 400 ? '…' : ''}` } },\n  { type: 'section', text: { type: 'mrkdwn', text: `*X / Twitter*\\n${c.x}` } },\n  { type: 'section', text: { type: 'mrkdwn', text: `*Instagram*\\n${c.instagram.slice(0, 300)}${c.instagram.length > 300 ? '…' : ''}` } },\n  { type: 'divider' },\n  { type: 'section', text: { type: 'mrkdwn', text: `*CTA*\\n${pack.cta}\\n\\n*Hashtags*\\n${pack.hashtags.slice(0, 200)}\\n\\n*Schedule*\\n${Object.entries(pt).map(([p,t]) => `• ${p}: ${t}`).join('\\n')}` } },\n  { type: 'divider' },\n  { type: 'section', text: { type: 'mrkdwn', text: `*Images*\\n• <${images.hero}|Hero 1200×630>  • <${images.square}|Square 1080×1080>  • <${images.story}|Story 1080×1920>` } },\n  { type: 'context', elements: [{ type: 'mrkdwn', text: `SEO: _${seo.title}_ · _${(seo.meta||'').slice(0,80)}…_` }] }\n].filter(Boolean);\n\nreturn [{ json: { markdown: md, slackBlocks, pack, images } }];"
+      },
+      "id": "c04d3d8f-8ea1-45ad-b46d-27cdd651bd0d",
+      "name": "Final Report Builder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5440,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "#content-research-automation"
+        },
+        "messageType": "block",
+        "blocksUi": "={{ JSON.stringify($json.slackBlocks) }}",
+        "text": "Content pack ready — review and post manually.",
+        "otherOptions": {
+          "mrkdwn": true,
+          "unfurl_links": false
+        }
+      },
+      "id": "d181bb7b-3824-4d5c-9e25-0fbef2d75d58",
+      "name": "Slack — Draft Card",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        5664,
+        864
+      ],
+      "webhookId": "2511e372-d71c-45dc-9535-25a36125ae0e"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "#content-research-automation"
+        },
+        "text": ":page_facing_up: *Full Pack — {{ $('Content Intelligence Parser').first().json.campaignId }}*\n\n{{ $('Final Report Builder').first().json.markdown.slice(0, 3900) }}",
+        "otherOptions": {
+          "mrkdwn": true,
+          "unfurl_links": false
+        }
+      },
+      "id": "b8a3bf88-5682-4d06-8515-3b7df23e829a",
+      "name": "Slack — Full Report Thread",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        5888,
+        864
+      ],
+      "webhookId": "10159d44-bf15-46b3-acbb-6a6e9a56ef89"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "k7hyOjlVNltMS1WH",
+          "mode": "list",
+          "cachedResultName": "Content Engine Queue",
+          "cachedResultUrl": "/projects/l1Hl5ujmSA6L2AsX/datatables/k7hyOjlVNltMS1WH"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "createdAt",
+              "condition": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "54ee12f6-5137-49c7-8abf-626bb06a1a74",
+      "name": "Flush Table",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        6112,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "err_check",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "17c5a8a7-5dae-4a95-8d9f-a46da947af56",
+      "name": "Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2480,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-v4-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        1232
+      ],
+      "id": "d791df14-aa11-4dd5-aed4-27d20ad648c7",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "BluVhHtuAdF81TuZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-v4-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2208,
+        1232
+      ],
+      "id": "ea6af24b-5004-4f1a-98ec-b65283286828",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "BluVhHtuAdF81TuZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Receives all rows from Data Table as individual items\n// Deduplicates and bundles into one single item for OpenAI\nconst allItems = $input.all();\n\nconst seen = new Set();\nconst deduped = [];\n\nfor (const it of allItems) {\n  const d = it.json;\n  if (!d || !d.title) continue;\n  const key = d.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60);\n  if (seen.has(key)) continue;\n  seen.add(key);\n  deduped.push({\n    title: d.title || '',\n    published: d.pubDate || '',\n    source: d.link || ''\n  });\n}\n\nreturn [{ json: { items: deduped, count: deduped.length } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        1008
+      ],
+      "id": "ec8e13cb-f924-47e7-9951-d244f3e730cc",
+      "name": "Dedup and Bundle"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.items.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are a signal extraction agent for OpenBox AI — an enterprise AI trust and governance platform that provides runtime monitoring of AI agents, policy enforcement via OPA/Rego, cryptographic attestation (Merkle audit trail), human-in-the-loop (HITL) approvals, and a Trust Lifecycle (Assess → Authorize → Monitor → Verify → Adapt).\n\nIDEAL CUSTOMER PROFILE:\n- CISOs at mid-market and enterprise companies deploying AI agents in production who need audit trails and policy enforcement\n- AI/ML Platform Leads managing agent infrastructure who need runtime observability and behavioral guardrails\n- Compliance Officers navigating AI regulation (EU AI Act, NIST AI RMF, ISO 42001, FINRA, SOC 2) who need cryptographically verifiable evidence of AI decisions\n\nOPENBOX PRODUCT SURFACE:\n- Trust Score: real-time trustworthiness rating per agent action\n- Behavioral Rules: OPA/Rego policies defining what agents can/cannot do\n- Merkle Audit Trail: tamper-proof cryptographic log of every agent decision\n- HITL: approval gates that pause agent execution for human review\n- Session Replay: full playback of an agent decision sequence\n- Trust Lifecycle: Assess → Authorize → Monitor → Verify → Adapt\n\nCOMPETITORS:\n- Langfuse → LLM observability and tracing only, no governance or attestation\n- Arize → ML model monitoring, no policy enforcement\n- WhyLabs → data quality monitoring, no agent-level controls\nOpenBox differentiator: the ONLY platform combining governance + cryptographic attestation + runtime policy enforcement in one layer.\n\nCORE THEMES TO EXTRACT:\n- Agentic AI risk, autonomous agent security, agent policy enforcement\n- LLM security, prompt injection in enterprise\n- AI governance frameworks, responsible AI, trustworthy AI\n- Regulatory signals: EU AI Act, NIST AI RMF, ISO 42001, FINRA, SEC AI rules, SOC 2 for AI, HIPAA + AI\n- Model risk management, AI audit requirements, AI compliance\n- Human-in-the-loop, human oversight of AI, AI accountability\n- Cryptographic attestation, tamper-proof AI logs, AI audit trails\n- LLMOps, AI agent infrastructure, agentic frameworks (LangGraph, Mastra, Temporal, CrewAI)\n- Shadow AI, unsanctioned AI use in enterprise\n- AI incidents, AI agent failures in production, AI liability\n\nSTRICT FILTER — EXCLUDE:\n- Consumer AI tools (ChatGPT tips, Midjourney, image generation)\n- Generic coding assistants unrelated to governance\n- AI hardware, chips, data centers\n- Funding news unless it signals a direct competitive threat to OpenBox\n- Celebrity or pop culture AI, AI art, music, creative tools\n\nHERE ARE {{ $json.count }} RAW ITEMS from 15 sources.\n\nItems:\n{{ JSON.stringify($json.items) }}\n\nYOUR TASK:\n1. Apply the strict filter — drop anything not relevant to OpenBox themes\n2. For each relevant item extract: title, url, published, source, summary (1 sentence in your own words), relevance_hint (max 10 words — why this matters for OpenBox)\n3. Return ONLY valid JSON. No markdown fences, no explanation:\n   { \"extracted\": [ { \"title\", \"url\", \"published\", \"source\", \"summary\", \"relevance_hint\" } ] }\n\nIf zero items are relevant return: { \"extracted\": [] }"
+        }
+      },
+      "type": "CUSTOM.openBoxAgent",
+      "typeVersion": 1,
+      "position": [
+        528,
+        1008
+      ],
+      "id": "ec4963c3-3022-4ca2-a636-10326919eb6f",
+      "name": "OpenBox: Agent",
+      "credentials": {
+        "openBoxApi": {
+          "id": "MWSXGgk0lrOm6qNy",
+          "name": "OpenBox account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        1008
+      ],
+      "id": "144b1580-893a-4558-8b04-69d62fe590d3",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d4aa7ec-6945-43ca-bb37-095d3f3b3bfb",
+              "leftValue": "={{ $json._maxRetriesExceeded }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3376,
+        1008
+      ],
+      "id": "ed79e163-caa6-4421-a7e3-a0ec010215c4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=:x: *Content Studio — Max Retries Exceeded*\nCampaign: `{{ $json.campaignId }}`\nTopic: {{ $json.topic }}\n\n*Last reviewer notes:*\n{{ $json.reviewerNotes }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3584,
+        1152
+      ],
+      "id": "51120671-e683-4d79-ae36-dd6bc6f4ee67",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        4864,
+        1056
+      ],
+      "id": "93587971-eef1-46fb-9834-7a5303e716d8",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "BluVhHtuAdF81TuZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.pack.imagePrompts.hero }}\n{{ $json.pack.imagePrompts.square }}\n{{ $json.pack.imagePrompts.story }}",
+        "options": {
+          "systemMessage": "Check for Image Censorship"
+        }
+      },
+      "type": "CUSTOM.openBoxAgent",
+      "typeVersion": 1,
+      "position": [
+        4864,
+        864
+      ],
+      "id": "3325cd45-1fb9-408b-a924-8e04d3d99d4b",
+      "name": "Image Content Governance",
+      "credentials": {
+        "openBoxApi": {
+          "id": "MWSXGgk0lrOm6qNy",
+          "name": "OpenBox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.brief }}",
+        "options": {
+          "systemMessage": "You are the OpenBox AI Content Studio — a single governed agent that internally fulfils five expert roles simultaneously:\n\n1. CAMPAIGN STRATEGIST — Define the business goal, key message, success metric, and platform strategy.\n2. MARKET RESEARCHER — Use the Wikipedia tool to verify any factual claim, statistic, or named entity before including it.\n3. SENIOR COPYWRITER — Write all platform copy at the appropriate register and length for each channel.\n4. SEO SPECIALIST — Craft the title tag, meta description, and keyword set to maximise organic reach.\n5. CREATIVE DIRECTOR — Specify vivid, art-directed image generation prompts tailored to each format.\n\nOpenBox context: enterprise AI trust and governance platform. Features include Trust Score, OPA/Rego Behavioral Rules, Merkle Audit Trail, HITL approvals, Session Replay, Trust Lifecycle. ICP: CISOs, AI Platform Leads, Compliance Officers.\n\nFor the content brief you receive, produce a complete publishing pack using these EXACT section headers:\n\n**UNIFIED_BRIEF:** Business goal | Target audience | Key message | Tone | Success metric\n\n**LINKEDIN:** Professional post. Max 1300 characters. Lead with insight. Max 3 hashtags.\n\n**X:** Max 280 characters. Hook in first 8 words. 1-2 hashtags.\n\n**INSTAGRAM:** Hook line first. Purposeful emojis. 5 targeted hashtags at end.\n\n**FACEBOOK:** Conversational, 100-250 words, one question to drive comments.\n\n**THREADS:** Casual, 500-char max, one emoji, no hashtags.\n\n**BLOG_TITLE:** Compelling headline, max 70 characters.\n\n**BLOG_SUMMARY:** 150-word summary. Punchy opening, 3 key points, clear CTA.\n\n**CTA:** Single call-to-action sentence usable across all platforms.\n\n**HASHTAGS:** 10 researched hashtags, ranked by relevance, comma-separated.\n\n**IMAGE_PROMPT_HERO:** Vivid 1200×630 description. Subject, composition, lighting, colour palette, mood. No text overlays.\n\n**IMAGE_PROMPT_SQUARE:** 1080×1080 square version.\n\n**IMAGE_PROMPT_STORY:** 1080×1920 vertical. Bolder, more graphic.\n\n**SEO_TITLE:** Max 60 characters. Include primary keyword.\n\n**META_DESCRIPTION:** Max 155 characters. CTA + primary keyword.\n\n**KEYWORDS:** 8-12 comma-separated, head → long-tail.\n\n**POSTING_SCHEDULE:** Day + time per platform, one per line.\n\nRules: verify every factual claim with Wikipedia. Never invent statistics. Always include an explicit CTA. Output only the sections above."
+        }
+      },
+      "id": "25f6aab8-cac2-4228-9da2-5b735e234e97",
+      "name": "Content Governance",
+      "type": "CUSTOM.openBoxAgent",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        752
+      ],
+      "credentials": {
+        "openBoxApi": {
+          "id": "MWSXGgk0lrOm6qNy",
+          "name": "OpenBox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.items }}",
+        "options": {
+          "systemMessage": "You are a signal extraction agent for OpenBox AI — an enterprise AI trust and governance platform.\n\nNote: these items have ALREADY passed the OpenBox governance gate, so they are all ICP-relevant. Your job is to extract structured signal from them and filter out any remaining noise.\n\nIDEAL CUSTOMER PROFILE:\n- CISOs at mid-market and enterprise companies deploying AI agents in production\n- AI/ML Platform Leads managing agent infrastructure\n- Compliance Officers navigating AI regulation (EU AI Act, NIST AI RMF, ISO 42001, FINRA, SOC 2)\n\nOPENBOX PRODUCT SURFACE:\n- Trust Score, Behavioral Rules (OPA/Rego), Merkle Audit Trail, HITL, Session Replay, Trust Lifecycle\n\nCOMPETITORS: Langfuse (observability), Arize (ML monitoring), WhyLabs (data quality)\nOpenBox differentiator: governance + cryptographic attestation + runtime policy enforcement.\n\nFOR EACH ITEM:\n1. Confirm it's relevant (already gate-filtered, but reject pure noise)\n2. Extract: title, url, published, source, summary (1 sentence), relevance_hint (max 10 words — why this matters for OpenBox)\n\nReturn ONLY valid JSON. No markdown fences:\n{ \"extracted\": [ { \"title\", \"url\", \"published\", \"source\", \"summary\", \"relevance_hint\" } ] }"
+        }
+      },
+      "id": "8c28f11f-3f02-46bf-84c5-8c6020966c11",
+      "name": "Signal Extractor",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1552,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the OpenBox AI content scoring and brief agent.\n\nOpenBox AI is an enterprise AI trust and governance platform.\nCore: runtime monitoring of AI agents, OPA/Rego policy enforcement, cryptographic attestation (Merkle audit trail), HITL approvals, Trust Lifecycle (Assess→Authorize→Monitor→Verify→Adapt), EU AI Act, FINRA, SOC 2 compliance, LLMOps governance.\nICP: CISOs, AI Platform Leads, Compliance Officers at enterprises deploying AI agents.\nCompetitors: Langfuse (observability only), Arize (ML monitoring), WhyLabs (data quality). OpenBox differentiator: governance + attestation, not just logging.\nOpenBox product features: Trust Score, Behavioral Rules (OPA/Rego), Merkle Audit Trail, HITL, Session Replay, Trust Lifecycle.\n\nToday is {{ new Date().toISOString().split('T')[0] }}.\n\nYou have {{ $json.total }} pre-filtered, governance-cleared signals below. Each has a published date and age_label.\n\nPHASE 1 — SCORE every item:\n- relevance_score (1-10): How directly related to AI governance, agentic AI risk, LLM security, enterprise AI trust?\n- urgency_score (1-10): Is this trending, breaking, emotionally charged for a CISO/Compliance audience?\n- gap_score (1-10): Can OpenBox say something Langfuse/Arize/WhyLabs cannot? Higher = bigger gap.\n- freshness_score (1-10): Items from the last few hours = 10. Items from yesterday = 7-8. Items from 3-5 days ago = 4-6. Items from 5-7 days ago = 2-3.\n- composite_score = (relevance * 0.35) + (urgency * 0.30) + (gap * 0.20) + (freshness * 0.15)\n\nPHASE 2 — Pick the TOP 5 by composite_score and generate a full content brief for each:\n- rank (1-5)\n- title (original)\n- url\n- source\n- published\n- age_label\n- relevance_score, urgency_score, gap_score, freshness_score, composite_score\n- persona: CISO or AI Platform Lead or Compliance Officer\n- content_type: thought_leadership or how_to or comparison or data_driven or news_commentary\n- why_openbox (max 20 words): why this matters specifically for OpenBox positioning\n- headline: punchy SEO blog title, use numbers/specifics\n- hook: 1 sentence that makes a CISO stop scrolling — lead with threat, gap, or provocative claim\n- key_argument: 2 sentences — the core thesis only OpenBox can credibly make vs Langfuse/Arize/WhyLabs\n- three_subheadings: array of 3 concrete H2s that move the argument forward\n- openbox_product_tie: which OpenBox feature anchors this — e.g. Merkle Audit Trail, HITL, OPA Policy Engine, Trust Score, Session Replay\n- cta: 1 sentence product CTA referencing a specific OpenBox capability\n- publish_format: blog_post or linkedin_article or twitter_thread or technical_guide\n- estimated_write_time: e.g. 3 hours\n\nReturn ONLY valid JSON — no markdown fences, no explanation:\n{ \"top5\": [ { all fields above } ] }\n\nSignals pool:\n{{ JSON.stringify($json.pool) }}",
+        "messages": {
+          "messageValues": []
+        }
+      },
+      "id": "915b337c-901c-4e47-a66c-1c6bbe327b2f",
+      "name": "Score Top 5",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        2128,
+        1008
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RSS — Hacker News": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — TLDR AI": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RSS — VentureBeat AI": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "RSS — Dark Reading": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "RSS — Wired Security": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "RSS — The Hacker News": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "API — HN Algolia": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "API — DEV.to": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "API — arXiv": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "Merge RSS": {
+      "main": [
+        [
+          {
+            "node": "Dedup and Bundle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Sonnet 4 (Gate)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "OpenBox: Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Feed Item": {
+      "main": [
+        [
+          {
+            "node": "Data Table — Insert Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table — Insert Row": {
+      "main": [
+        [
+          {
+            "node": "Deduplicate & Bundle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplicate & Bundle": {
+      "main": [
+        [
+          {
+            "node": "Signal Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine & Date-Filter Pool": {
+      "main": [
+        [
+          {
+            "node": "Score Top 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Top 5 → Brief Emitter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Top 5 → Brief Emitter": {
+      "main": [
+        [
+          {
+            "node": "Content Intelligence Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Intelligence Parser": {
+      "main": [
+        [
+          {
+            "node": "Retry Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Counter": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Sonnet 4 (Studio)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Content Governance",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Studio Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Content Governance",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia Research": {
+      "ai_tool": [
+        [
+          {
+            "node": "Content Governance",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 2.5 Pro (Reviewer)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Compliance + SEO Reviewer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compliance + SEO Reviewer": {
+      "main": [
+        [
+          {
+            "node": "Verdict Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verdict Extractor": {
+      "main": [
+        [
+          {
+            "node": "Publishing Pack Assembler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publishing Pack Assembler": {
+      "main": [
+        [
+          {
+            "node": "Image Content Governance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Generation": {
+      "main": [
+        [
+          {
+            "node": "Final Report Builder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Report Builder": {
+      "main": [
+        [
+          {
+            "node": "Slack — Draft Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack — Draft Card": {
+      "main": [
+        [
+          {
+            "node": "Slack — Full Report Thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack — Full Report Thread": {
+      "main": [
+        [
+          {
+            "node": "Flush Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Signal Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Score Top 5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dedup and Bundle": {
+      "main": [
+        [
+          {
+            "node": "OpenBox: Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenBox: Agent": {
+      "main": [
+        [
+          {
+            "node": "Normalize Feed Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "RSS — Dark Reading",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — VentureBeat AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Hacker News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — TLDR AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Wired Security",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — The Hacker News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "API — HN Algolia",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "API — DEV.to",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "API — arXiv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Content Governance",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Image Content Governance",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Content Governance": {
+      "main": [
+        [
+          {
+            "node": "Image Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Governance": {
+      "main": [
+        [
+          {
+            "node": "Compliance + SEO Reviewer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signal Extractor": {
+      "main": [
+        [
+          {
+            "node": "Combine & Date-Filter Pool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Top 5": {
+      "main": [
+        [
+          {
+            "node": "Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "844602a2-dbd9-4b69-a4cd-75ec6f56fb82",
+  "meta": {
+    "instanceId": "3006a5d6772217f5ebf10e103499012896c18b16962721572449c979edef3060"
+  },
+  "nodeGroups": [],
+  "id": "WOP5sLhLuXyTaoQY",
+  "tags": []
+}
